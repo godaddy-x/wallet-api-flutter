@@ -229,11 +229,20 @@ class WalletClient {
   Future<Map<String, dynamic>> getBalanceByAccount(Map<String, dynamic> req) =>
       _sendOps('/api/GetBalanceByAccount', req);
 
+  Future<Map<String, dynamic>> findSymbolPriceList(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FindSymbolPriceList', req);
+
   Future<Map<String, dynamic>> getAccountBalanceList(Map<String, dynamic> req) =>
       _sendOps('/api/GetAccountBalanceList', req);
 
   Future<Map<String, dynamic>> importAddress(Map<String, dynamic> req) =>
       _sendOps('/api/ImportAddress', req);
+
+  /// 为钱包新增币种地址：HD 派生账户+地址并同事务入库。
+  Future<Map<String, dynamic>> createCoinAddressOps(Map<String, dynamic> req) =>
+      _sendOps('/api/CreateCoinAddress', req);
 
   Future<Map<String, dynamic>> findAddressByAddress(Map<String, dynamic> req) =>
       _sendOps('/api/FindAddressByAddress', req);
@@ -334,6 +343,9 @@ class WalletClient {
   Future<Map<String, dynamic>> findTradeLog(Map<String, dynamic> req) =>
       _sendOps('/api/FindTradeLog', req);
 
+  Future<Map<String, dynamic>> findTradeNewly(Map<String, dynamic> req) =>
+      _sendOps('/api/FindTradeNewly', req);
+
   Future<Map<String, dynamic>> findBalanceLog(Map<String, dynamic> req) =>
       _sendOps('/api/FindBalanceLog', req);
 
@@ -354,6 +366,12 @@ class WalletClient {
   /// OPS 代理 broker keygen（api_main mpccli → broker CreateMPCWallet）。
   Future<Map<String, dynamic>> createMpcWalletOps(Map<String, dynamic> req) =>
       _sendOps('/api/CreateMPCWallet', req);
+
+  /// 查询 Keygen 参与方 MPC node 是否在线（broker 在线集）。
+  Future<Map<String, dynamic>> checkMpcParticipantsOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/CheckMPCParticipants', req);
 
   Future<Map<String, dynamic>> cliCreateAccount(Map<String, dynamic> req) =>
       _sendCli('/api/CreateAccount', req);
