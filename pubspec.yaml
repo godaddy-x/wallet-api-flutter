@@ -1,0 +1,19 @@
+name: wallet_api
+description: Wallet API SDK for Dart/Flutter — OPS and MPC WebSocket integration with signed transfers.
+version: 0.1.0
+repository: https://github.com/godaddy-x/wallet-api-flutter
+homepage: https://github.com/godaddy-x/wallet-api-flutter
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  crypto: ^3.0.7
+  cryptography: ^2.9.0
+  pqcrypto: ^0.4.0
+  uuid: ^4.6.0
+  web_socket_channel: ^3.0.3
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0

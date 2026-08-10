@@ -1,0 +1,20 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / local env
+integration/integration.env
+*.pem
+*.key
