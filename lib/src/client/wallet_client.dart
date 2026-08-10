@@ -237,6 +237,9 @@ class WalletClient {
   Future<Map<String, dynamic>> getAccountBalanceList(Map<String, dynamic> req) =>
       _sendOps('/api/GetAccountBalanceList', req);
 
+  Future<Map<String, dynamic>> getBalancesByAccount(Map<String, dynamic> req) =>
+      _sendOps('/api/GetBalancesByAccount', req);
+
   Future<Map<String, dynamic>> importAddress(Map<String, dynamic> req) =>
       _sendOps('/api/ImportAddress', req);
 
