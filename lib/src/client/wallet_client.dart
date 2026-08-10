@@ -290,6 +290,11 @@ class WalletClient {
   Future<Map<String, dynamic>> opsFindWalletList([Map<String, dynamic>? req]) =>
       _sendOps('/api/FindWalletList', req ?? {});
 
+  Future<Map<String, dynamic>> getTransactionFeeEstimated(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GetTransactionFeeEstimated', req);
+
   Future<Map<String, dynamic>> createTrade(Map<String, dynamic> req) =>
       _sendOpsTrade('/api/CreateTrade', req, tradeKindCreate, 'pendingSignTx');
 
