@@ -415,6 +415,73 @@ class WalletClient {
   Future<Map<String, dynamic>> executeTransferProposal(Map<String, dynamic> req) =>
       _sendOps('/api/ExecuteTransferProposal', req);
 
+  // --- Friends & inbox (api_main) ---
+
+  Future<Map<String, dynamic>> friendSendRequest(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendSendRequest', req);
+
+  Future<Map<String, dynamic>> friendSearchUser(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendSearchUser', req);
+
+  Future<Map<String, dynamic>> friendList(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendList', req);
+
+  Future<Map<String, dynamic>> friendPeerOnline(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendPeerOnline', req);
+
+  Future<Map<String, dynamic>> friendListRequests(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendListRequests', req);
+
+  Future<Map<String, dynamic>> friendAcceptRequest(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendAcceptRequest', req);
+
+  Future<Map<String, dynamic>> friendRejectRequest(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendRejectRequest', req);
+
+  Future<Map<String, dynamic>> friendCancelRequest(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendCancelRequest', req);
+
+  Future<Map<String, dynamic>> inboxList(Map<String, dynamic> req) =>
+      _sendOps('/api/InboxList', req);
+
+  Future<Map<String, dynamic>> inboxUnreadCount(Map<String, dynamic> req) =>
+      _sendOps('/api/InboxUnreadCount', req);
+
+  Future<Map<String, dynamic>> inboxMarkRead(Map<String, dynamic> req) =>
+      _sendOps('/api/InboxMarkRead', req);
+
+  Future<Map<String, dynamic>> friendChatSend(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendChatSend', req);
+
+  Future<Map<String, dynamic>> friendChatThreadList(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendChatThreadList', req);
+
+  Future<Map<String, dynamic>> friendChatMessageList(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendChatMessageList', req);
+
+  Future<Map<String, dynamic>> friendChatMarkRead(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendChatMarkRead', req);
+
+  Future<Map<String, dynamic>> friendChatRecall(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendChatRecall', req);
+
+  Future<Map<String, dynamic>> friendSetRemark(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendSetRemark', req);
+
+  void setOpsBroadcastKey(String key) => _opsSdk?.setBroadcastKey(key);
+
+  void onOpsPush(String router, PushMessageHandler handler) {
+    _opsSdk?.onPush(router, handler);
+  }
+
+  void offOpsPush(String router, PushMessageHandler handler) {
+    _opsSdk?.offPush(router, handler);
+  }
+
+  void setOpsOnReconnected(Future<void> Function()? callback) {
+    _opsSdk?.setOnReconnected(callback);
+  }
+
   Future<Map<String, dynamic>> signMpc(Map<String, dynamic> req) =>
       _sendOps('/api/SignMPC', req);
 }

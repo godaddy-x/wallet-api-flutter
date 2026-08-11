@@ -84,6 +84,10 @@ Future<SocketSDK> newLongLivedSocket(SdkConfig cfg) async {
   sdk.enableReconnect();
   sdk.setTokenExpiredCallback(() => loginSocket(cfg));
   await sdk.connectWebSocket();
+  if (!sdk.isWebSocketConnected()) {
+    await sdk.disconnectWebSocket();
+    throw StateError('WebSocket initial connect failed');
+  }
   return sdk;
 }
 
@@ -108,6 +112,10 @@ Future<SocketSDK> newLongLivedSocketWithAuth(
     sdk.setTokenExpiredCallback(onTokenExpired);
   }
   await sdk.connectWebSocket();
+  if (!sdk.isWebSocketConnected()) {
+    await sdk.disconnectWebSocket();
+    throw StateError('WebSocket initial connect failed');
+  }
   return sdk;
 }
 

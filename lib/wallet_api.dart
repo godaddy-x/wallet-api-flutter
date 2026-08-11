@@ -22,4 +22,4 @@ export 'src/client/trade_hook.dart'
 export 'src/client/util.dart' show WalletApiException, errNilRequest;
 export 'src/client/wallet_client.dart';
 export 'src/protocol/envelope.dart' show AuthToken;
-export 'src/transport/socket_sdk.dart' show SocketSDK, SocketSdkOptions;
+export 'src/transport/socket_sdk.dart' show PushMessageHandler, SocketSDK, SocketSdkOptions;

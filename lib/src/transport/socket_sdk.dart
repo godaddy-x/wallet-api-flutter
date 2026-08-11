@@ -34,6 +34,10 @@ class SocketSdkOptions {
   final int healthPingSec;
 }
 
+const pushMessageCode = 300;
+
+typedef PushMessageHandler = void Function(Map<String, dynamic> data);
+
 typedef TokenRefreshCallback = Future<AuthToken?> Function();
 
 /// Long-lived OPS/MPC WebSocket client (Plan2 login + Plan1 business).
@@ -69,8 +73,12 @@ class SocketSDK {
   Timer? _heartbeatTimer;
   Timer? _tokenMonitorTimer;
   TokenRefreshCallback? _tokenRefreshCallback;
+  Future<void> Function()? _onReconnected;
+  bool _hadSuccessfulConnection = false;
   final Map<String, Completer<JsonResp>> _pending = {};
+  final Map<String, List<PushMessageHandler>> _pushHandlers = {};
   final _sendLock = _AsyncLock();
+  String _broadcastKey = '';
 
   void authToken(AuthToken token) {
     _auth = token;
@@ -93,8 +101,28 @@ class SocketSDK {
     _tokenRefreshCallback = callback;
   }
 
+  /// WS 重连成功后的回调（不含首次建连）。
+  void setOnReconnected(Future<void> Function()? callback) {
+    _onReconnected = callback;
+  }
+
   void setWebSocketPath(String path) {
     _wsPath = path.startsWith('/') ? path : '/$path';
+  }
+
+  /// WS 推送验签密钥，须与 api_main `server.extract_key.broadcast_key` 一致。
+  void setBroadcastKey(String key) {
+    _broadcastKey = key.trim();
+  }
+
+  void onPush(String router, PushMessageHandler handler) {
+    final normalized = router.trim();
+    if (normalized.isEmpty) return;
+    _pushHandlers.putIfAbsent(normalized, () => []).add(handler);
+  }
+
+  void offPush(String router, PushMessageHandler handler) {
+    _pushHandlers[router.trim()]?.remove(handler);
   }
 
   String _uri() {
@@ -139,12 +167,19 @@ class SocketSDK {
       if (validToken()) {
         await _sendAuthHandshake();
       }
+      final isReconnect = _hadSuccessfulConnection;
+      _hadSuccessfulConnection = true;
       _connected = true;
       _startHeartbeat();
       _startTokenMonitor();
+      if (isReconnect) {
+        final cb = _onReconnected;
+        if (cb != null) unawaited(cb());
+      }
     } catch (_) {
       _connected = false;
-      if (_reconnectEnabled) {
+      await _tearDownActiveSocket();
+      if (_reconnectEnabled && _hadSuccessfulConnection) {
         _scheduleReconnect();
         return;
       }
@@ -154,9 +189,22 @@ class SocketSDK {
     }
   }
 
+  Future<void> _tearDownActiveSocket() async {
+    _connected = false;
+    _stopHeartbeat();
+    _stopTokenMonitor();
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    await _recvSub?.cancel();
+    _recvSub = null;
+    await _ws?.sink.close();
+    _ws = null;
+  }
+
   Future<void> disconnectWebSocket() async {
     _closed = true;
     _connected = false;
+    _hadSuccessfulConnection = false;
     _stopHeartbeat();
     _stopTokenMonitor();
     _reconnectTimer?.cancel();
@@ -193,6 +241,10 @@ class SocketSDK {
     try {
       final data = jsonDecode(raw as String) as Map<String, dynamic>;
       final resp = JsonResp.fromJson(data);
+      if (resp.c == pushMessageCode && resp.m == 'push') {
+        _handlePushMessage(resp);
+        return;
+      }
       if (resp.n.isEmpty) return;
       final authKey = 'auth_${resp.n}';
       final pending = _pending.remove(resp.n) ??
@@ -206,11 +258,41 @@ class SocketSDK {
     }
   }
 
+  void _handlePushMessage(JsonResp resp) {
+    final router = resp.r?.trim() ?? '';
+    if (router.isEmpty) return;
+    if (_broadcastKey.isEmpty) return;
+    try {
+      final key = utf8.encode(_broadcastKey);
+      final expected = signBodyMessage(
+        router,
+        resp.d,
+        resp.n,
+        resp.t,
+        resp.p,
+        0,
+        Uint8List.fromList(key),
+      );
+      if (!compareBase64Sign(expected, resp.s)) return;
+      final decoded = jsonDecode(utf8.decode(base64Decode(resp.d)));
+      if (decoded is! Map) return;
+      final payload = Map<String, dynamic>.from(decoded);
+      final handlers = List<PushMessageHandler>.from(
+        _pushHandlers[router] ?? const [],
+      );
+      for (final handler in handlers) {
+        handler(payload);
+      }
+    } catch (_) {
+      // ignore invalid push frames
+    }
+  }
+
   Future<void> _handleClose() async {
     _connected = false;
     _ws = null;
     _stopHeartbeat();
-    if (_reconnectEnabled && !_closed) {
+    if (_reconnectEnabled && !_closed && _hadSuccessfulConnection) {
       _scheduleReconnect();
     }
   }
