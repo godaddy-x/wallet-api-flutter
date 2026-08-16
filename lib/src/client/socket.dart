@@ -82,7 +82,6 @@ Future<SocketSDK> newLongLivedSocket(SdkConfig cfg) async {
   final token = await loginSocket(cfg);
   sdk.authToken(token);
   sdk.enableReconnect();
-  sdk.setTokenExpiredCallback(() => loginSocket(cfg));
   await sdk.connectWebSocket();
   if (!sdk.isWebSocketConnected()) {
     await sdk.disconnectWebSocket();
@@ -95,7 +94,7 @@ Future<SocketSDK> newLongLivedSocket(SdkConfig cfg) async {
 Future<SocketSDK> newLongLivedSocketWithAuth(
   SdkConfig cfg,
   AuthToken token, {
-  OpsAuthTokenRefresh? onTokenExpired,
+  OpsSessionExpiredHandler? onSessionExpired,
 }) async {
   final sdk = SocketSDK(
     SocketSdkOptions(
@@ -108,8 +107,8 @@ Future<SocketSDK> newLongLivedSocketWithAuth(
   );
   sdk.authToken(token);
   sdk.enableReconnect();
-  if (onTokenExpired != null) {
-    sdk.setTokenExpiredCallback(onTokenExpired);
+  if (onSessionExpired != null) {
+    sdk.setOnSessionExpired(onSessionExpired);
   }
   await sdk.connectWebSocket();
   if (!sdk.isWebSocketConnected()) {

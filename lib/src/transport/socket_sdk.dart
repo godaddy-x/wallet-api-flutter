@@ -38,7 +38,7 @@ const pushMessageCode = 300;
 
 typedef PushMessageHandler = void Function(Map<String, dynamic> data);
 
-typedef TokenRefreshCallback = Future<AuthToken?> Function();
+typedef SessionExpiredCallback = void Function();
 
 /// Long-lived OPS/MPC WebSocket client (Plan2 login + Plan1 business).
 class SocketSDK {
@@ -71,8 +71,9 @@ class SocketSDK {
   bool _reconnectEnabled = false;
   Timer? _reconnectTimer;
   Timer? _heartbeatTimer;
-  Timer? _tokenMonitorTimer;
-  TokenRefreshCallback? _tokenRefreshCallback;
+  Timer? _sessionExpiryTimer;
+  SessionExpiredCallback? _onSessionExpired;
+  bool _sessionExpiredNotified = false;
   Future<void> Function()? _onReconnected;
   bool _hadSuccessfulConnection = false;
   final Map<String, Completer<JsonResp>> _pending = {};
@@ -83,6 +84,8 @@ class SocketSDK {
   void authToken(AuthToken token) {
     _auth = token;
     _rawAuthHeader = '';
+    _sessionExpiredNotified = false;
+    _scheduleSessionExpiryTimer();
   }
 
   AuthToken? getAuth() => _auth;
@@ -97,8 +100,8 @@ class SocketSDK {
 
   void enableReconnect() => _reconnectEnabled = true;
 
-  void setTokenExpiredCallback(TokenRefreshCallback callback) {
-    _tokenRefreshCallback = callback;
+  void setOnSessionExpired(SessionExpiredCallback? callback) {
+    _onSessionExpired = callback;
   }
 
   /// WS 重连成功后的回调（不含首次建连）。
@@ -150,15 +153,11 @@ class SocketSDK {
   Future<void> connectWebSocket() async {
     if (_connecting) throw StateError('connection already in progress');
     if (isWebSocketConnected()) return;
-    if (!validToken() && _rawAuthHeader.isEmpty) {
-      final cb = _tokenRefreshCallback;
-      if (cb != null) {
-        final refreshed = await cb();
-        if (refreshed != null) authToken(refreshed);
-      }
-    }
-    if (!validToken() && _rawAuthHeader.isEmpty) {
+    if (_auth == null && _rawAuthHeader.isEmpty) {
       throw StateError('token empty or token expired, and raw authorization is empty');
+    }
+    if (_checkSessionExpired()) {
+      throw StateError('token expired');
     }
 
     _connecting = true;
@@ -171,7 +170,6 @@ class SocketSDK {
       _hadSuccessfulConnection = true;
       _connected = true;
       _startHeartbeat();
-      _startTokenMonitor();
       if (isReconnect) {
         final cb = _onReconnected;
         if (cb != null) unawaited(cb());
@@ -192,7 +190,6 @@ class SocketSDK {
   Future<void> _tearDownActiveSocket() async {
     _connected = false;
     _stopHeartbeat();
-    _stopTokenMonitor();
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
     await _recvSub?.cancel();
@@ -206,7 +203,7 @@ class SocketSDK {
     _connected = false;
     _hadSuccessfulConnection = false;
     _stopHeartbeat();
-    _stopTokenMonitor();
+    _cancelSessionExpiryTimer();
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
     await _recvSub?.cancel();
@@ -219,6 +216,8 @@ class SocketSDK {
       }
     }
     _pending.clear();
+    _onSessionExpired = null;
+    _onReconnected = null;
   }
 
   Future<void> _openSocket() async {
@@ -301,12 +300,56 @@ class SocketSDK {
     if (_reconnectTimer != null) return;
     _reconnectTimer = Timer(const Duration(seconds: 3), () async {
       _reconnectTimer = null;
+      if (_sessionExpiredNotified || _checkSessionExpired()) return;
       try {
         await connectWebSocket();
       } catch (_) {
+        if (_sessionExpiredNotified) return;
         _scheduleReconnect();
       }
     });
+  }
+
+  void _cancelSessionExpiryTimer() {
+    _sessionExpiryTimer?.cancel();
+    _sessionExpiryTimer = null;
+  }
+
+  /// 在 JWT `expired` 时刻触发登出，避免仅依赖心跳（默认约 10s）导致最多延迟一轮检测。
+  void _scheduleSessionExpiryTimer() {
+    _cancelSessionExpiryTimer();
+    final auth = _auth;
+    if (auth == null || auth.expired <= 0) return;
+
+    final nowSec = unixSecond();
+    final delayMs = (auth.expired - nowSec) * 1000;
+    if (delayMs <= 0) {
+      scheduleMicrotask(_checkSessionExpired);
+      return;
+    }
+
+    _sessionExpiryTimer = Timer(Duration(milliseconds: delayMs), () {
+      _sessionExpiryTimer = null;
+      _checkSessionExpired();
+    });
+  }
+
+  /// JWT 会话过期：停止重连并通知上层退出登录（不自动换票）。
+  bool _checkSessionExpired() {
+    if (_auth == null || _rawAuthHeader.isNotEmpty) return false;
+    if (validToken()) return false;
+    _handleSessionExpired();
+    return true;
+  }
+
+  void _handleSessionExpired() {
+    if (_sessionExpiredNotified) return;
+    _sessionExpiredNotified = true;
+    _reconnectEnabled = false;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    final cb = _onSessionExpired;
+    unawaited(disconnectWebSocket().whenComplete(() => cb?.call()));
   }
 
   Future<void> _sendPayload(String payload) async {
@@ -583,7 +626,7 @@ class SocketSDK {
     final interval = Duration(seconds: healthPingSec.clamp(1, 15));
     _heartbeatTimer = Timer.periodic(interval, (_) async {
       if (!isWebSocketConnected()) return;
-      if (_rawAuthHeader.isNotEmpty && !validToken()) return;
+      if (_checkSessionExpired()) return;
       try {
         await _sendHeartbeat();
       } catch (_) {
@@ -620,25 +663,6 @@ class SocketSDK {
       ),
     );
     await _writeBody(jsonBody, false, 0);
-  }
-
-  void _startTokenMonitor() {
-    _stopTokenMonitor();
-    _tokenMonitorTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
-      if (_rawAuthHeader.isNotEmpty) return;
-      if (!validToken() && !isWebSocketConnected()) {
-        final cb = _tokenRefreshCallback;
-        if (cb != null) {
-          final token = await cb();
-          if (token != null) authToken(token);
-        }
-      }
-    });
-  }
-
-  void _stopTokenMonitor() {
-    _tokenMonitorTimer?.cancel();
-    _tokenMonitorTimer = null;
   }
 }
 

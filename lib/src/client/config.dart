@@ -4,7 +4,7 @@ import '../protocol/envelope.dart';
 import 'trade_hook.dart';
 
 typedef ConfigHook = FutureOr<void> Function(Config cfg);
-typedef OpsAuthTokenRefresh = Future<AuthToken> Function();
+typedef OpsSessionExpiredHandler = void Function();
 
 class SdkConfig {
   SdkConfig({
@@ -41,7 +41,7 @@ class Config {
     List<TradeCreatedHook>? tradeCreatedHooks,
     this.disableDefaultTradeHooks = false,
     this.opsAuthToken,
-    this.opsTokenRefresh,
+    this.opsOnSessionExpired,
   }) : tradeCreatedHooks = tradeCreatedHooks ?? [];
 
   SdkConfig? ops;
@@ -52,7 +52,8 @@ class Config {
   bool disableDefaultTradeHooks;
   /// C 端 App：AppUserLogin 已签发的 JWT，直连 OPS 时跳过 /api/Login。
   AuthToken? opsAuthToken;
-  OpsAuthTokenRefresh? opsTokenRefresh;
+  /// JWT 过期时回调（应退出登录，不自动换票）。
+  OpsSessionExpiredHandler? opsOnSessionExpired;
 }
 
 class TransferTimings {

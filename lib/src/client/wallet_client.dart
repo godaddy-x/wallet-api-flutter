@@ -45,7 +45,7 @@ class WalletClient {
         client._opsSdk = await newLongLivedSocketWithAuth(
           cfg.ops!,
           cfg.opsAuthToken!,
-          onTokenExpired: cfg.opsTokenRefresh,
+          onSessionExpired: cfg.opsOnSessionExpired,
         );
       } else {
         client._opsSdk = await newLongLivedSocket(cfg.ops!);
@@ -381,6 +381,31 @@ class WalletClient {
   ) =>
       _sendOps('/api/CheckMPCParticipants', req);
 
+  Future<Map<String, dynamic>> createWalletKeygenInviteOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/CreateWalletKeygenInvite', req);
+
+  Future<Map<String, dynamic>> getWalletKeygenInviteOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GetWalletKeygenInvite', req);
+
+  Future<Map<String, dynamic>> approveWalletKeygenInviteOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ApproveWalletKeygenInvite', req);
+
+  Future<Map<String, dynamic>> rejectWalletKeygenInviteOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/RejectWalletKeygenInvite', req);
+
+  Future<Map<String, dynamic>> cancelWalletKeygenInviteOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/CancelWalletKeygenInvite', req);
+
   Future<Map<String, dynamic>> cliCreateAccount(Map<String, dynamic> req) =>
       _sendCli('/api/CreateAccount', req);
 
@@ -415,6 +440,11 @@ class WalletClient {
   Future<Map<String, dynamic>> executeTransferProposal(Map<String, dynamic> req) =>
       _sendOps('/api/ExecuteTransferProposal', req);
 
+  Future<Map<String, dynamic>> reportTransferProposalFailure(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ReportTransferProposalFailure', req);
+
   // --- Friends & inbox (api_main) ---
 
   Future<Map<String, dynamic>> friendSendRequest(Map<String, dynamic> req) =>
@@ -425,9 +455,6 @@ class WalletClient {
 
   Future<Map<String, dynamic>> friendList(Map<String, dynamic> req) =>
       _sendOps('/api/FriendList', req);
-
-  Future<Map<String, dynamic>> friendPeerOnline(Map<String, dynamic> req) =>
-      _sendOps('/api/FriendPeerOnline', req);
 
   Future<Map<String, dynamic>> friendListRequests(Map<String, dynamic> req) =>
       _sendOps('/api/FriendListRequests', req);
@@ -465,8 +492,109 @@ class WalletClient {
   Future<Map<String, dynamic>> friendChatRecall(Map<String, dynamic> req) =>
       _sendOps('/api/FriendChatRecall', req);
 
+  Future<Map<String, dynamic>> friendChatImagePresignPut(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FriendChatImagePresignPut', req);
+
+  Future<Map<String, dynamic>> friendChatImageConfirm(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FriendChatImageConfirm', req);
+
+  Future<Map<String, dynamic>> friendChatImagePresignGet(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FriendChatImagePresignGet', req);
+
+  Future<Map<String, dynamic>> friendChatVoicePresignPut(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FriendChatVoicePresignPut', req);
+
+  Future<Map<String, dynamic>> friendChatVoiceConfirm(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FriendChatVoiceConfirm', req);
+
+  Future<Map<String, dynamic>> friendChatVoicePresignGet(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/FriendChatVoicePresignGet', req);
+
   Future<Map<String, dynamic>> friendSetRemark(Map<String, dynamic> req) =>
       _sendOps('/api/FriendSetRemark', req);
+
+  Future<Map<String, dynamic>> groupChatCreate(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatCreate', req);
+
+  Future<Map<String, dynamic>> groupChatInfo(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatInfo', req);
+
+  Future<Map<String, dynamic>> groupChatLeave(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatLeave', req);
+
+  Future<Map<String, dynamic>> groupChatDissolve(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatDissolve', req);
+
+  Future<Map<String, dynamic>> groupChatKickMember(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatKickMember', req);
+
+  Future<Map<String, dynamic>> groupChatInviteMembers(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatInviteMembers', req);
+
+  Future<Map<String, dynamic>> groupChatSend(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatSend', req);
+
+  Future<Map<String, dynamic>> groupChatThreadList(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatThreadList', req);
+
+  Future<Map<String, dynamic>> groupChatMessageList(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatMessageList', req);
+
+  Future<Map<String, dynamic>> groupChatMarkRead(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatMarkRead', req);
+
+  Future<Map<String, dynamic>> groupChatRecall(Map<String, dynamic> req) =>
+      _sendOps('/api/GroupChatRecall', req);
+
+  Future<Map<String, dynamic>> groupChatImagePresignPut(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GroupChatImagePresignPut', req);
+
+  Future<Map<String, dynamic>> groupChatImageConfirm(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GroupChatImageConfirm', req);
+
+  Future<Map<String, dynamic>> groupChatImagePresignGet(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GroupChatImagePresignGet', req);
+
+  Future<Map<String, dynamic>> groupChatVoicePresignPut(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GroupChatVoicePresignPut', req);
+
+  Future<Map<String, dynamic>> groupChatVoiceConfirm(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GroupChatVoiceConfirm', req);
+
+  Future<Map<String, dynamic>> groupChatVoicePresignGet(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/GroupChatVoicePresignGet', req);
+
+  Future<Map<String, dynamic>> appUserLogout(Map<String, dynamic> req) =>
+      _sendOps('/api/AppUserLogout', req);
+
+  Future<Map<String, dynamic>> appUserListLoginHistoryOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserListLoginHistory', req);
 
   void setOpsBroadcastKey(String key) => _opsSdk?.setBroadcastKey(key);
 
@@ -484,4 +612,76 @@ class WalletClient {
 
   Future<Map<String, dynamic>> signMpc(Map<String, dynamic> req) =>
       _sendOps('/api/SignMPC', req);
+
+  // --- Shard vault / cloud backup (api_main) ---
+
+  Future<Map<String, dynamic>> appUserSetBackupPasswordOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserSetBackupPassword', req);
+
+  Future<Map<String, dynamic>> appUserGetBackupPasswordStatusOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserGetBackupPasswordStatus', req);
+
+  Future<Map<String, dynamic>> appUserCheckBackupPasswordOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserCheckBackupPassword', req);
+
+  Future<Map<String, dynamic>> appUserVerifyBackupPasswordOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserVerifyBackupPassword', req);
+
+  Future<Map<String, dynamic>> appUserGetProfileOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserGetProfile', req);
+
+  Future<Map<String, dynamic>> appUserUpdateProfileOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserUpdateProfile', req);
+
+  Future<Map<String, dynamic>> appUserGetTotpConfigOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserGetTotpConfig', req);
+
+  Future<Map<String, dynamic>> appUserBindTotpOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserBindTotp', req);
+
+  Future<Map<String, dynamic>> appUserRebindTotpOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserRebindTotp', req);
+
+  Future<Map<String, dynamic>> appUserVerifyTransferOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserVerifyTransfer', req);
+
+  Future<Map<String, dynamic>> shardVaultPresignPutOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ShardVaultPresignPut', req);
+
+  Future<Map<String, dynamic>> shardVaultCommitUploadOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ShardVaultCommitUpload', req);
+
+  Future<Map<String, dynamic>> shardVaultPresignGetOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ShardVaultPresignGet', req);
+
+  Future<Map<String, dynamic>> shardVaultListStatusOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ShardVaultListStatus', req);
 }
