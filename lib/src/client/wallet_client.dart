@@ -290,6 +290,12 @@ class WalletClient {
   Future<Map<String, dynamic>> opsFindWalletList([Map<String, dynamic>? req]) =>
       _sendOps('/api/FindWalletList', req ?? {});
 
+  /// OPS home assets: wallets + grouped balances + USD totals in one call.
+  Future<Map<String, dynamic>> opsFindWalletHomeList([
+    Map<String, dynamic>? req,
+  ]) =>
+      _sendOps('/api/FindWalletHomeList', req ?? {});
+
   Future<Map<String, dynamic>> getTransactionFeeEstimated(
     Map<String, dynamic> req,
   ) =>
@@ -595,6 +601,11 @@ class WalletClient {
     Map<String, dynamic> req,
   ) =>
       _sendOps('/api/AppUserListLoginHistory', req);
+
+  Future<String> getWsBroadcastKeyOps() async {
+    final res = await _sendOps('/api/WSBroadcastKey', {});
+    return res['broadcastKey']?.toString().trim() ?? '';
+  }
 
   void setOpsBroadcastKey(String key) => _opsSdk?.setBroadcastKey(key);
 
