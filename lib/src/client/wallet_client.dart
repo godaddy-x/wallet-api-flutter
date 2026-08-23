@@ -369,6 +369,9 @@ class WalletClient {
   Future<Map<String, dynamic>> getBlockStatus(Map<String, dynamic> req) =>
       _sendOps('/api/GetBlockStatus', req);
 
+  Future<Map<String, dynamic>> getAppVersionInfo(Map<String, dynamic> req) =>
+      _sendOps('/api/GetAppVersionInfo', req);
+
   // --- MPC ---
 
   Future<Map<String, dynamic>> findWalletList([Map<String, dynamic>? req]) =>
@@ -461,6 +464,9 @@ class WalletClient {
 
   Future<Map<String, dynamic>> friendList(Map<String, dynamic> req) =>
       _sendOps('/api/FriendList', req);
+
+  Future<Map<String, dynamic>> friendHomeList(Map<String, dynamic> req) =>
+      _sendOps('/api/FriendHomeList', req);
 
   Future<Map<String, dynamic>> friendListRequests(Map<String, dynamic> req) =>
       _sendOps('/api/FriendListRequests', req);
