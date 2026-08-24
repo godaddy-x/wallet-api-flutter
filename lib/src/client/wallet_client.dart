@@ -489,6 +489,12 @@ class WalletClient {
   Future<Map<String, dynamic>> inboxMarkRead(Map<String, dynamic> req) =>
       _sendOps('/api/InboxMarkRead', req);
 
+  Future<Map<String, dynamic>> announcementList(Map<String, dynamic> req) =>
+      _sendOps('/api/AnnouncementList', req);
+
+  Future<Map<String, dynamic>> announcementDetail(Map<String, dynamic> req) =>
+      _sendOps('/api/AnnouncementDetail', req);
+
   Future<Map<String, dynamic>> friendChatSend(Map<String, dynamic> req) =>
       _sendOps('/api/FriendChatSend', req);
 
