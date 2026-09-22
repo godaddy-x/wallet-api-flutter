@@ -234,6 +234,16 @@ class WalletClient {
   ) =>
       _sendOps('/api/FindSymbolPriceList', req);
 
+  Future<Map<String, dynamic>> subscribeSymbolPriceMarket(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/SubscribeSymbolPriceMarket', req);
+
+  Future<Map<String, dynamic>> unsubscribeSymbolPriceMarket(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/UnsubscribeSymbolPriceMarket', req);
+
   Future<Map<String, dynamic>> getAccountBalanceList(Map<String, dynamic> req) =>
       _sendOps('/api/GetAccountBalanceList', req);
 
@@ -390,6 +400,12 @@ class WalletClient {
   ) =>
       _sendOps('/api/CheckMPCParticipants', req);
 
+  /// 创建钱包可选 MPC 算法（与 CreateMPCWallet.algorithm 一致）。
+  Future<Map<String, dynamic>> getWalletKeygenOptionsOps([
+    Map<String, dynamic>? req,
+  ]) =>
+      _sendOps('/api/GetWalletKeygenOptions', req ?? const {});
+
   Future<Map<String, dynamic>> createWalletKeygenInviteOps(
     Map<String, dynamic> req,
   ) =>
@@ -414,6 +430,18 @@ class WalletClient {
     Map<String, dynamic> req,
   ) =>
       _sendOps('/api/CancelWalletKeygenInvite', req);
+
+  /// MPC 参与方长期 Plan2 身份公钥（Keygen 前按 participantAppIDs）。
+  Future<Map<String, dynamic>> listMpcPeerIdentityPubsOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ListMpcPeerIdentityPubs', req);
+
+  /// MPC 参与方长期 Plan2 身份公钥（Sign 前按 walletID）。
+  Future<Map<String, dynamic>> listWalletPeerIdentityPubsOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/ListWalletPeerIdentityPubs', req);
 
   Future<Map<String, dynamic>> cliCreateAccount(Map<String, dynamic> req) =>
       _sendCli('/api/CreateAccount', req);
@@ -494,6 +522,21 @@ class WalletClient {
 
   Future<Map<String, dynamic>> announcementDetail(Map<String, dynamic> req) =>
       _sendOps('/api/AnnouncementDetail', req);
+
+  Future<Map<String, dynamic>> createSupportTicket(Map<String, dynamic> req) =>
+      _sendOps('/api/CreateSupportTicket', req);
+
+  Future<Map<String, dynamic>> supportTicketList(Map<String, dynamic> req) =>
+      _sendOps('/api/SupportTicketList', req);
+
+  Future<Map<String, dynamic>> supportTicketDetail(Map<String, dynamic> req) =>
+      _sendOps('/api/SupportTicketDetail', req);
+
+  Future<Map<String, dynamic>> replySupportTicket(Map<String, dynamic> req) =>
+      _sendOps('/api/ReplySupportTicket', req);
+
+  Future<Map<String, dynamic>> closeSupportTicket(Map<String, dynamic> req) =>
+      _sendOps('/api/CloseSupportTicket', req);
 
   Future<Map<String, dynamic>> friendChatSend(Map<String, dynamic> req) =>
       _sendOps('/api/FriendChatSend', req);
@@ -662,6 +705,11 @@ class WalletClient {
     Map<String, dynamic> req,
   ) =>
       _sendOps('/api/AppUserGetProfile', req);
+
+  Future<Map<String, dynamic>> appUserSetBrokerConnectOps(
+    Map<String, dynamic> req,
+  ) =>
+      _sendOps('/api/AppUserSetBrokerConnect', req);
 
   Future<Map<String, dynamic>> appUserUpdateProfileOps(
     Map<String, dynamic> req,
